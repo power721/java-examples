@@ -51,10 +51,10 @@ public class ApiClient {
     }
 
     private ProxySelector getProxy(String proxy) {
+        if (!proxy.startsWith("http")) {
+            proxy = "https://" + proxy;
+        }
         try {
-            if (!proxy.startsWith("http")) {
-                proxy = "https://" + proxy;
-            }
             URI uri = new URI(proxy);
             return ProxySelector.of(new InetSocketAddress(uri.getHost(), uri.getPort()));
         } catch (URISyntaxException e) {

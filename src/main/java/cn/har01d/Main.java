@@ -26,7 +26,10 @@ public class Main {
         HttpResponse<Map> response1 = client.post("https://reqbin.com/echo/post/json", body, Map.class);
         log.info("Map: {}", response1.body());
 
-        HttpResponse<String> response2 = client.put("https://reqbin.com/echo/put/json", "test", String.class);
-        log.info("String: {}", response2.body());
+        HttpResponse<Result> response2 = client.post("https://reqbin.com/echo/post/json", body, Result.class);
+        log.info("{}", response2.body());
+
+        HttpResponse<String> response3 = client.put("https://reqbin.com/echo/put/json", "test", String.class);
+        log.info("String: {}", response3.body());
     }
 }
