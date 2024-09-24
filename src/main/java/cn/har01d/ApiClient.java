@@ -9,6 +9,7 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -62,18 +63,18 @@ public class ApiClient {
     }
 
     public String getHtml(String uri) {
-        return get(uri, String.class);
+        return get(uri, String.class).body();
     }
 
-    public JsonNode get(String uri) {
+    public HttpResponse<JsonNode> get(String uri) {
         return get(uri, Map.of(), null);
     }
 
-    public <T> T get(String uri, Class<T> clazz) {
+    public <T> HttpResponse<T> get(String uri, Class<T> clazz) {
         return get(uri, Map.of(), clazz);
     }
 
-    public <T> T get(String uri, Map<String, String> headers, Class<T> clazz) {
+    public <T> HttpResponse<T> get(String uri, Map<String, String> headers, Class<T> clazz) {
         try {
             var builder = HttpRequest.newBuilder()
                     .uri(new URI(uri))
@@ -89,11 +90,11 @@ public class ApiClient {
         }
     }
 
-    public <T> T post(String uri, Object body, Class<T> clazz) {
+    public <T> HttpResponse<T> post(String uri, Object body, Class<T> clazz) {
         return post(uri, Map.of(), body, clazz);
     }
 
-    public <T> T post(String uri, Map<String, String> headers, Object body, Class<T> clazz) {
+    public <T> HttpResponse<T> post(String uri, Map<String, String> headers, Object body, Class<T> clazz) {
         try {
             var builder = HttpRequest.newBuilder()
                     .uri(new URI(uri))
@@ -110,15 +111,15 @@ public class ApiClient {
         }
     }
 
-    public <T> T put(String uri, Object body) {
+    public <T> HttpResponse<T> put(String uri, Object body) {
         return put(uri, Map.of(), body, null);
     }
 
-    public <T> T put(String uri, Object body, Class<T> clazz) {
+    public <T> HttpResponse<T> put(String uri, Object body, Class<T> clazz) {
         return put(uri, Map.of(), body, clazz);
     }
 
-    public <T> T put(String uri, Map<String, String> headers, Object body, Class<T> clazz) {
+    public <T> HttpResponse<T> put(String uri, Map<String, String> headers, Object body, Class<T> clazz) {
         try {
             var builder = HttpRequest.newBuilder()
                     .uri(new URI(uri))
@@ -135,22 +136,27 @@ public class ApiClient {
         }
     }
 
-    private <T> T sendRequest(HttpRequest request, Class<T> clazz) throws IOException, InterruptedException {
+    private <T> HttpResponse<T> sendRequest(HttpRequest request, Class<T> clazz) throws IOException, InterruptedException {
         log.info("Send request: {}", request);
         if (InputStream.class.equals(clazz)) {
-            return (T) client.send(request, HttpResponse.BodyHandlers.ofInputStream()).body();
+            return (HttpResponse<T>) client.send(request, HttpResponse.BodyHandlers.ofInputStream());
         }
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        if (response.statusCode() >= 400) {
-            return null;
-        }
-        if (clazz == null || clazz.equals(JsonNode.class)) {
-            return (T) readJson(response.body());
-        }
-        if (clazz.equals(String.class)) {
-            return (T) response.body();
-        }
-        return readJson(response.body(), clazz);
+        HttpResponse<T> response = client.send(request, asJSON(clazz));
+        return response;
+    }
+
+    public static <T> HttpResponse.BodyHandler<T> asJSON(Class<T> clazz) {
+        return responseInfo -> HttpResponse.BodySubscribers.mapping(
+                HttpResponse.BodySubscribers.ofString(StandardCharsets.UTF_8),
+                body -> {
+                    if (clazz == null || clazz.equals(JsonNode.class)) {
+                        return (T) readJson(body);
+                    }
+                    if (clazz.equals(String.class)) {
+                        return (T) body;
+                    }
+                    return readJson(body, clazz);
+                });
     }
 
     public static String toJsonString(Object value) {
