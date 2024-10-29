@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public class Main {
     private static final Logger log = LoggerFactory.getLogger(Main.class);
-    
+
     public static void main(String[] args) {
         var client = new ApiClient();
         String html = client.getHtml("https://reqbin.com/echo");
