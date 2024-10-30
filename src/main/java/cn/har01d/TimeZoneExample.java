@@ -17,7 +17,13 @@ public class TimeZoneExample {
         System.out.println(ZonedDateTime.parse(dateTime, formatter));
         System.out.println("Current time in China Standard Time: " + now.format(formatter));
 
+        formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss zzzz");
+        System.out.println("Current time in China Standard Time: " + now.format(formatter));
+
         formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z");
+        System.out.println("Current time in China Standard Time: " + now.format(formatter));
+
+        formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss ZZZZ");
         System.out.println("Current time in China Standard Time: " + now.format(formatter));
         /*
         Time Zone
