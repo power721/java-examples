@@ -1,5 +1,6 @@
 package cn.har01d;
 
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.ZoneId;
@@ -32,5 +33,14 @@ public class TimeZoneExample {
             X: ISO 8601 time zone (e.g., X for -08, XX for -0800, XXX for -08:00)
             V: Time zone ID (e.g., VV for America/Los_Angeles)
          */
+
+        formatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss yyyy");
+        System.out.println(formatter.format(now));
+
+        formatter = DateTimeFormatter.ofPattern("yyyy/MM");
+        System.out.println(formatter.format(Instant.now().atZone(ZoneId.of("Z"))));
+
+        System.out.println(ZoneId.of("PST", ZoneId.SHORT_IDS));
+        System.out.println(ZoneId.of("CST", ZoneId.SHORT_IDS));
     }
 }
